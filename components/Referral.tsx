@@ -12,13 +12,14 @@ interface FAQItem {
 }
 
 export default function Referral({ isAffiliate = false }: ReferralProps) {
-  const { referralCode, referralCount, referralVolume, earnings, getTier, balances } = useExchangeStore();
+  const { referralCode, referralCount, referralVolume, earnings, getTier, balances, addNotification } = useExchangeStore();
   const currentTier = getTier();
   
   // Hero cards exclude Rookie as it's the default starting state
   const tiers: ReferralTier[] = ['Bronze', 'Silver', 'Gold', 'Platinum'];
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [isGoalsOpen, setIsGoalsOpen] = useState(false);
+  const [isQualifiedTooltipOpen, setIsQualifiedTooltipOpen] = useState(false);
   const goalsRef = useRef<HTMLDivElement>(null);
 
   // My Invites Tab State
@@ -62,7 +63,11 @@ export default function Referral({ isAffiliate = false }: ReferralProps) {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    alert(`${label} copied!`);
+    addNotification({
+      title: 'Copied to Clipboard',
+      message: `${label} has been copied successfully.`,
+      type: 'success'
+    });
   };
 
   const fullRefLink = `https://lintex.exchange/ref/${referralCode}`;
@@ -218,7 +223,23 @@ export default function Referral({ isAffiliate = false }: ReferralProps) {
                            <div className="flex justify-between items-center text-[13px] font-medium text-zinc-400">
                              <div className="flex items-center gap-1.5">
                                Invite <span className="text-white font-bold tabular-nums">{nextTierData.currentRefs} / {nextTierData.totalRefs}</span> eligible referrals
-                               <span className="w-3.5 h-3.5 rounded-full border border-zinc-700 flex items-center justify-center text-[8px] text-zinc-500 font-bold cursor-help">i</span>
+                               <div className="relative">
+                                 <span 
+                                   onMouseEnter={() => setIsQualifiedTooltipOpen(true)}
+                                   onMouseLeave={() => setIsQualifiedTooltipOpen(false)}
+                                   className="w-3.5 h-3.5 rounded-full border border-zinc-700 flex items-center justify-center text-[8px] text-zinc-500 font-bold cursor-help hover:border-zinc-500 hover:text-zinc-300 transition-colors"
+                                 >
+                                   i
+                                 </span>
+                                 
+                                 {/* Qualified Referral Tooltip */}
+                                 <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-4 bg-[#1a1c22] border border-zinc-800 rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.6)] z-[110] transition-all duration-200 pointer-events-none ${isQualifiedTooltipOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
+                                   <p className="text-[11px] leading-relaxed text-zinc-300">
+                                     <span className="text-white font-bold">Qualified Referral:</span> A referee who, within 7 days of their first deposit, has a cumulative net deposit of at least 100 USDT and completes at least one Futures trade.
+                                   </p>
+                                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-[#1a1c22] border-r border-b border-zinc-800"></div>
+                                 </div>
+                               </div>
                              </div>
                            </div>
                            <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
